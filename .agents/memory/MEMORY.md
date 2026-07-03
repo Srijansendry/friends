@@ -1,0 +1,2 @@
+- [Anonymous multi-token auth pattern](anon-multi-token-auth.md) — anon-token routes must split comma-joined `x-anon-token` header and use `inArray`, not `eq`.
+- [LNCT GenZ Connect project setup](project-setup.md) — dev ports, Vite proxy, start script, secrets, DB push command.

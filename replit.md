@@ -56,6 +56,12 @@ _Populate as you build — explicit user instructions worth remembering across s
 - Any new anon-token-authenticated route must split the `x-anon-token` header on commas and use `inArray`, since a browser may hold several tokens across multiple posts/requests — see the multi-token gotcha in `.agents/memory/`.
 - `SESSION_SECRET` and `ADMIN_PASSWORD` must both be set or the API server throws on startup / admin login always fails.
 
+## How to Run (Replit)
+
+- Click **Run** — starts both the API server (port 8080) and the Vite frontend (port 5000) via `start-dev.sh`
+- The Vite dev server proxies `/api/*` requests to the API server automatically
+- DB schema is already pushed; to repush after schema changes: `pnpm --filter @workspace/db run push`
+
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
