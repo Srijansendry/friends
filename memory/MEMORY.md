@@ -1,0 +1,1 @@
+- [Anonymous multi-token auth pattern](anon-multi-token-auth.md) — anon-token routes must split comma-joined `x-anon-token` header and use `inArray`, not `eq`.
