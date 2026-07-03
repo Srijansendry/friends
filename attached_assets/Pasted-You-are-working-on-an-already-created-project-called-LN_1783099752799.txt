@@ -1,0 +1,205 @@
+You are working on an already-created project called “LNCT GenZ Connect”. Do NOT recreate the project from scratch. First audit the existing codebase, understand the current pages/components/state/backend structure, then improve the existing website professionally.
+
+Current problem:
+The website looks too plain, empty, template-like, and unattractive. It has weak typography, too much unused whitespace, boring cards, basic navigation, and no premium GenZ feel. Redesign the complete UI/UX while keeping the existing functionality working.
+
+Project purpose:
+LNCT GenZ Connect is a mobile-first anonymous connection platform for LNCT students. Students can anonymously post what they are looking for: friends, hackathon teammates, college help, study partners, or safe social connections. Other users can browse posts and request to connect, but identities should not be directly revealed. The experience should feel cute, modern, trustworthy, and made for Instagram story traffic.
+
+Main design direction:
+Make the website feel like a premium GenZ college community app, not a plain admin dashboard.
+
+Use:
+- Mobile-first responsive design.
+- Cute, soft, modern visual style.
+- Elegant pink/lavender/white theme.
+- Smooth rounded cards.
+- Soft shadows.
+- Clean gradients.
+- Subtle glassmorphism only where it improves the look.
+- Modern typography.
+- Better spacing, hierarchy, icons, empty states, loading states, and animations.
+
+Typography:
+The current font looks generic. Replace it with a premium modern font combination.
+Use Google Fonts such as:
+- “Poppins” or “Plus Jakarta Sans” for main UI text.
+- Optional stylish heading font like “Playfair Display” only for hero/headings if it looks good.
+Typography must feel clean, cute, readable, and premium.
+Use proper font weights, line-height, letter spacing, and responsive sizes.
+
+Branding:
+The website name should clearly show as:
+“LNCT GenZ Connect”
+Also add a subtle background branding/watermark text somewhere like:
+“LNCT GenZ Connect”
+Make it visible but not distracting.
+The UI should look connected to an Instagram community page, not like a random website.
+
+Important pages/components to improve:
+
+1. Navigation
+- Make navbar clean, sticky, and mobile-friendly.
+- On desktop: logo/name on left, Browse, My Activity, Post Anonymously button on right.
+- On mobile: compact top bar with bottom navigation or hamburger menu.
+- “Post Anonymously” should be the main highlighted CTA.
+- Add smooth hover/tap states.
+
+2. Browse Posts Page
+Current Browse page is too empty and boring. Redesign it fully.
+Add:
+- A hero section at the top:
+  Title: “Find your people at LNCT — anonymously.”
+  Subtitle: “Post, browse, and connect safely for friends, hackathon teams, study partners, and more.”
+  CTA buttons: “Post Anonymously” and “Browse Posts”
+- Search bar with modern rounded design.
+- Category chips:
+  All, Friends, Hackathon Team, Study Partner, Events, Confession, Help, Other
+- Better post cards.
+Each post card should include:
+  - Category badge
+  - Anonymous display name like “Anonymous Student #204”
+  - Post title
+  - Short description
+  - Date/time
+  - Number of connect requests
+  - Button: “Request Connect”
+  - Small safety note: “Identity hidden until admin approval”
+Cards should look premium, rounded, clean, and cute.
+Add sample posts if database is empty so the UI never looks blank.
+
+3. Post Creation Page
+Redesign the form to feel simple and friendly.
+Add heading:
+“Create an anonymous post”
+Subtitle:
+“Share what you’re looking for. Your identity stays private.”
+Fields:
+- Category dropdown
+- Title
+- Description
+- Optional interests/skills/tags
+- Optional Instagram handle/contact info should NOT be publicly displayed; keep it private for admin only.
+- Checkbox confirmation:
+  “I understand my post will be anonymous and connection requests may be reviewed.”
+Button:
+“Post Anonymously”
+Add validation, error messages, success toast, and loading state.
+
+4. My Activity Page
+Current empty page looks too basic. Improve it.
+If there is no activity:
+- Show a cute illustration/icon.
+- Text: “No activity yet”
+- Subtitle: “Posts you create and connection requests you send will appear here.”
+- CTA: “Create your first post”
+If there is activity:
+- Show tabs:
+  My Posts
+  My Requests
+  Approved Connections
+Use clean cards and clear statuses:
+Pending, Approved, Rejected, Admin Review.
+
+5. Admin / Connection Flow
+If admin functionality exists, improve it.
+If not, create a basic admin dashboard structure.
+Admin should see:
+- New posts
+- Connection requests
+- Requester info
+- Poster info
+- Approve / Reject buttons
+- Status management
+Do not reveal identities publicly.
+Admin-mediated flow:
+User A posts anonymously.
+User B requests to connect.
+Admin reviews.
+Only after approval should next steps be shown privately.
+
+6. Visual polish
+Add:
+- Better color system
+- Better spacing
+- Better card shadows
+- Micro animations
+- Button hover/tap animations
+- Toast notifications
+- Skeleton loaders
+- Empty states
+- Error states
+- Mobile responsive layout
+- Safe area spacing for mobile screens
+- Consistent border radius
+- Better icons using lucide-react or similar icon library
+
+Suggested color palette:
+- Background: #FFF7FA or #FFF5F8
+- Primary pink: #D85C8A
+- Deep text: #351827
+- Lavender accent: #EEE6FF
+- Soft card: #FFFFFF
+- Border: #F2D8E4
+- Muted text: #7A5C6B
+Use gradients carefully. Do not make it over-colorful.
+
+7. Mobile-first requirements
+Most users will open this from Instagram story on mobile.
+So:
+- First screen must explain the website clearly within 3 seconds.
+- CTA should be visible without scrolling.
+- Buttons must be thumb-friendly.
+- Forms must be easy to fill on phone.
+- Cards should stack beautifully on mobile.
+- Avoid tiny fonts.
+- Avoid desktop-only spacing.
+
+8. Backend / functionality
+Do not break existing backend.
+Keep all existing working features.
+Improve data handling and validation.
+Handle edge cases:
+- Empty database
+- Failed post creation
+- Failed request creation
+- Duplicate connection request
+- Missing required fields
+- Very long text
+- Spammy posts
+- Loading states
+- No internet/API failure
+- Mobile viewport issues
+
+9. Code quality
+Refactor components cleanly.
+Use reusable components:
+- Navbar
+- Button
+- Card
+- Badge
+- EmptyState
+- PostCard
+- CategoryFilter
+- PostForm
+- ActivityCard
+- AdminRequestCard
+Use clean naming.
+Remove unused code.
+Keep the project fast and optimized.
+Make sure the app runs successfully after changes.
+
+10. Final result expectation
+The final website should look like a real modern college social platform, not a default AI-generated template.
+It should feel:
+- Cute
+- Premium
+- Trustworthy
+- Mobile-first
+- GenZ-friendly
+- Clean
+- Fast
+- Easy to understand
+- Ready to share on Instagram story
+
+After implementing, show me what files you changed and briefly explain the design improvements.

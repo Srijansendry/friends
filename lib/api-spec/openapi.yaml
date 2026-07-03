@@ -1,0 +1,732 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification for LNCT GenZ Connect
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: posts
+    description: Anonymous posts
+  - name: requests
+    description: Connection requests
+  - name: me
+    description: Anonymous-user self-service (owned posts/requests via token)
+  - name: admin
+    description: Admin moderation and mediation
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [posts]
+      summary: List post categories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [posts]
+      summary: List active posts
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/CategorySlug"
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [trending, recent]
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create an anonymous post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201":
+          description: Created post, includes the private owner token (shown once)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostWithToken"
+
+  /posts/trending:
+    get:
+      operationId: listTrendingPosts
+      tags: [posts]
+      summary: Get top trending posts for the homepage
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+      responses:
+        "200":
+          description: Trending posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+  /posts/{id}:
+    get:
+      operationId: getPost
+      tags: [posts]
+      summary: Get a post by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          description: Not found
+
+  /posts/{id}/requests:
+    post:
+      operationId: createConnectionRequest
+      tags: [requests]
+      summary: Request to connect with a post's anonymous author
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: x-anon-token
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionRequestInput"
+      responses:
+        "201":
+          description: Created connection request, includes the private requester token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRequestWithToken"
+        "404":
+          description: Post not found
+        "429":
+          description: Too many requests (spam protection)
+
+  /me/posts:
+    get:
+      operationId: listMyPosts
+      tags: [me]
+      summary: List posts owned by the anonymous token, with incoming requests
+      parameters:
+        - name: x-anon-token
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Owned posts with incoming connection requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MyPost"
+
+  /me/requests:
+    get:
+      operationId: listMyRequests
+      tags: [me]
+      summary: List connection requests made by the anonymous token
+      parameters:
+        - name: x-anon-token
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Requests made by this token, with mediation messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MyRequest"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Invalid password
+
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: Admin logout
+      responses:
+        "204":
+          description: Logged out
+
+  /admin/session:
+    get:
+      operationId: getAdminSession
+      tags: [admin]
+      summary: Check current admin session
+      responses:
+        "200":
+          description: Session status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Dashboard summary counts for admin
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "401":
+          description: Not authenticated
+
+  /admin/posts:
+    get:
+      operationId: listAdminPosts
+      tags: [admin]
+      summary: List all posts for moderation
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PostStatus"
+      responses:
+        "200":
+          description: Posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+        "401":
+          description: Not authenticated
+
+  /admin/posts/{id}:
+    patch:
+      operationId: updateAdminPost
+      tags: [admin]
+      summary: Moderate a post (e.g. mark as spam/removed, restore, close)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostModeration"
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "401":
+          description: Not authenticated
+        "404":
+          description: Not found
+
+  /admin/requests:
+    get:
+      operationId: listAdminRequests
+      tags: [admin]
+      summary: List all connection requests for mediation
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RequestStatus"
+      responses:
+        "200":
+          description: Requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminConnectionRequest"
+        "401":
+          description: Not authenticated
+
+  /admin/requests/{id}/approve:
+    post:
+      operationId: approveAdminRequest
+      tags: [admin]
+      summary: Approve a connection request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminConnectionRequest"
+        "401":
+          description: Not authenticated
+        "404":
+          description: Not found
+
+  /admin/requests/{id}/reject:
+    post:
+      operationId: rejectAdminRequest
+      tags: [admin]
+      summary: Reject a connection request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminConnectionRequest"
+        "401":
+          description: Not authenticated
+        "404":
+          description: Not found
+
+  /admin/requests/{id}/messages:
+    post:
+      operationId: sendAdminMessage
+      tags: [admin]
+      summary: Admin sends a mediated message to the poster or requester
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminMessageInput"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminConnectionRequest"
+        "401":
+          description: Not authenticated
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    CategorySlug:
+      type: string
+      enum:
+        [
+          find_friends,
+          hackathon_team,
+          study_group,
+          roommate,
+          project_collab,
+          other,
+        ]
+
+    PostStatus:
+      type: string
+      enum: [active, closed, removed]
+
+    RequestStatus:
+      type: string
+      enum: [pending, approved, rejected]
+
+    Category:
+      type: object
+      required: [slug, label, description]
+      properties:
+        slug:
+          $ref: "#/components/schemas/CategorySlug"
+        label:
+          type: string
+        description:
+          type: string
+
+    Post:
+      type: object
+      required:
+        [
+          id,
+          category,
+          alias,
+          title,
+          description,
+          skills,
+          status,
+          viewCount,
+          requestCount,
+          createdAt,
+        ]
+      properties:
+        id:
+          type: integer
+        category:
+          $ref: "#/components/schemas/CategorySlug"
+        alias:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: "#/components/schemas/PostStatus"
+        viewCount:
+          type: integer
+        requestCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    PostWithToken:
+      allOf:
+        - $ref: "#/components/schemas/Post"
+        - type: object
+          required: [ownerToken]
+          properties:
+            ownerToken:
+              type: string
+
+    PostInput:
+      type: object
+      required: [category, title, description]
+      properties:
+        category:
+          $ref: "#/components/schemas/CategorySlug"
+        title:
+          type: string
+          minLength: 3
+          maxLength: 120
+        description:
+          type: string
+          minLength: 10
+          maxLength: 2000
+        skills:
+          type: array
+          items:
+            type: string
+
+    PostModeration:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: "#/components/schemas/PostStatus"
+
+    ConnectionRequestInput:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 5
+          maxLength: 1000
+        contactNote:
+          type: string
+          maxLength: 300
+          description: Optional note on how the admin can reach the requester (e.g. preferred handle)
+
+    ConnectionRequestWithToken:
+      type: object
+      required: [id, postId, status, message, createdAt, requesterToken]
+      properties:
+        id:
+          type: integer
+        postId:
+          type: integer
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        requesterToken:
+          type: string
+
+    AdminMessage:
+      type: object
+      required: [id, toParty, body, createdAt]
+      properties:
+        id:
+          type: integer
+        toParty:
+          type: string
+          enum: [poster, requester]
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    MyPostIncomingRequest:
+      type: object
+      required: [id, status, message, createdAt, messages]
+      properties:
+        id:
+          type: integer
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminMessage"
+
+    MyPost:
+      allOf:
+        - $ref: "#/components/schemas/Post"
+        - type: object
+          required: [incomingRequests]
+          properties:
+            incomingRequests:
+              type: array
+              items:
+                $ref: "#/components/schemas/MyPostIncomingRequest"
+
+    MyRequest:
+      type: object
+      required: [id, postId, postTitle, postCategory, status, message, createdAt, messages]
+      properties:
+        id:
+          type: integer
+        postId:
+          type: integer
+        postTitle:
+          type: string
+        postCategory:
+          $ref: "#/components/schemas/CategorySlug"
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminMessage"
+
+    AdminConnectionRequest:
+      type: object
+      required:
+        [
+          id,
+          postId,
+          postTitle,
+          postCategory,
+          postAlias,
+          status,
+          message,
+          contactNote,
+          createdAt,
+          messages,
+        ]
+      properties:
+        id:
+          type: integer
+        postId:
+          type: integer
+        postTitle:
+          type: string
+        postCategory:
+          $ref: "#/components/schemas/CategorySlug"
+        postAlias:
+          type: string
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        message:
+          type: string
+        contactNote:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminMessage"
+
+    AdminMessageInput:
+      type: object
+      required: [toParty, body]
+      properties:
+        toParty:
+          type: string
+          enum: [poster, requester]
+        body:
+          type: string
+          minLength: 1
+          maxLength: 1000
+
+    AdminLoginInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+
+    AdminSession:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated:
+          type: boolean
+
+    AdminStats:
+      type: object
+      required:
+        [
+          totalPosts,
+          activePosts,
+          pendingRequests,
+          approvedRequests,
+          postsToday,
+          removedPosts,
+        ]
+      properties:
+        totalPosts:
+          type: integer
+        activePosts:
+          type: integer
+        pendingRequests:
+          type: integer
+        approvedRequests:
+          type: integer
+        postsToday:
+          type: integer
+        removedPosts:
+          type: integer

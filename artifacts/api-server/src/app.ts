@@ -1,0 +1,69 @@
+import express, { type Express } from "express";
+import cors from "cors";
+import session from "express-session";
+import pinoHttp from "pino-http";
+import router from "./routes";
+import { logger } from "./lib/logger";
+
+const app: Express = express();
+
+app.set("trust proxy", 1);
+
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      req(req) {
+        return {
+          id: req.id,
+          method: req.method,
+          url: req.url?.split("?")[0],
+        };
+      },
+      res(res) {
+        return {
+          statusCode: res.statusCode,
+        };
+      },
+    },
+  }),
+);
+// Restrict CORS to the known Replit dev domain (or localhost for local dev).
+// Never reflect arbitrary origins with credentials.
+const allowedOrigins: (string | RegExp)[] = [/^http:\/\/localhost(:\d+)?$/];
+if (process.env.REPLIT_DEV_DOMAIN) {
+  allowedOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
+}
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET environment variable is required");
+}
+
+if (!process.env.ADMIN_PASSWORD) {
+  // Don't crash — the server can still serve student routes — but make it
+  // impossible to miss: every admin login attempt will fail with 401.
+  logger.warn(
+    "ADMIN_PASSWORD is not set. Admin login will be rejected until it is configured.",
+  );
+}
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 12,
+    },
+  }),
+);
+
+app.use("/api", router);
+
+export default app;
