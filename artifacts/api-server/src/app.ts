@@ -35,8 +35,8 @@ if (process.env.REPLIT_DEV_DOMAIN) {
   allowedOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
 }
 app.use(cors({ origin: allowedOrigins, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable is required");

@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CategorySlug } from './categorySlug';
+import type { PostInputExpiryDuration } from './postInputExpiryDuration';
+import type { PostInputUrgency } from './postInputUrgency';
 
 export interface PostInput {
   category: CategorySlug;
@@ -20,4 +22,10 @@ export interface PostInput {
      */
   description: string;
   skills?: string[];
+  imageUrl?: string;
+  imageUrls?: string[];
+  urgency?: PostInputUrgency;
+  expiryDuration?: PostInputExpiryDuration;
+  /** @maxLength 300 */
+  contactNote?: string;
 }

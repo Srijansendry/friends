@@ -38,6 +38,16 @@ export function PostDetail({ id }: { id: string }) {
   });
 
   const handleManualSubmit = async (values: z.infer<typeof requestSchema>) => {
+    // Maintenance Mode Check
+    if (localStorage.getItem("gc-maintenance-mode") === "true") {
+      toast({
+        variant: "destructive",
+        title: "Platform in Maintenance",
+        description: "The system is currently in read-only mode for maintenance. Please try again later.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/posts/${postId}/requests`, {
@@ -93,6 +103,12 @@ export function PostDetail({ id }: { id: string }) {
     );
   }
 
+  const URGENCY_CONFIG: Record<string, { label: string, className: string }> = {
+    casual: { label: "Casual", className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-none" },
+    urgent: { label: "Urgent", className: "bg-red-500/10 text-red-600 dark:text-red-400 border-none animate-pulse" },
+    looking_for_long_term: { label: "Long Term", className: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-none" },
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-10 md:py-16 max-w-5xl flex flex-col lg:flex-row gap-10 animate-fade-in-up">
@@ -103,13 +119,23 @@ export function PostDetail({ id }: { id: string }) {
           </Button>
           
           <div>
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-6">
               <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-3 py-1.5 rounded-full font-semibold text-sm">
                 {post.category}
               </Badge>
+              {post.urgency && URGENCY_CONFIG[post.urgency] && (
+                <Badge variant="outline" className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${URGENCY_CONFIG[post.urgency].className}`}>
+                  {URGENCY_CONFIG[post.urgency].label}
+                </Badge>
+              )}
               <span className="text-sm font-medium text-muted-foreground flex items-center">
                 Posted {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
               </span>
+              {post.expiresAt && (
+                <span className="text-sm font-medium text-red-500 flex items-center gap-1.5 bg-red-50 dark:bg-red-950/20 px-2.5 py-1 rounded-lg">
+                  Expires {formatDistanceToNow(new Date(post.expiresAt), { addSuffix: true })}
+                </span>
+              )}
             </div>
             
             <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 tracking-tight leading-tight text-balance">{post.title}</h1>
@@ -124,6 +150,31 @@ export function PostDetail({ id }: { id: string }) {
               </div>
             </div>
             
+            {(() => {
+              const images = (post as any).imageUrls && (post as any).imageUrls.length 
+                ? (post as any).imageUrls 
+                : (post.imageUrl ? [post.imageUrl] : []);
+              if (images.length === 0) return null;
+              return (
+                <div className="mb-8 space-y-3">
+                  <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-none rounded-3xl border border-border/40 bg-muted/20 p-2 max-h-[450px]">
+                    {images.map((url: string, idx: number) => (
+                      <div key={idx} className="snap-center shrink-0 w-full flex items-center justify-center snap-always">
+                        <img src={url} alt={`Post media ${idx + 1}`} className="w-full object-contain max-h-[430px] rounded-2xl" />
+                      </div>
+                    ))}
+                  </div>
+                  {images.length > 1 && (
+                    <div className="flex justify-center gap-1.5 pt-1">
+                      {images.map((_: any, idx: number) => (
+                        <span key={idx} className="w-2.5 h-2.5 rounded-full bg-primary/25" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="prose prose-base md:prose-lg dark:prose-invert max-w-none text-foreground/90 whitespace-pre-wrap leading-relaxed">
               {post.description}
             </div>

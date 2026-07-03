@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, like, or, sql, gt, isNull } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   postsTable,
@@ -29,12 +29,41 @@ import { CATEGORIES } from "./categories";
 
 const router: IRouter = Router();
 
+function toPublicPost(row: any) {
+  const imageUrls = row.imageUrls && row.imageUrls.length 
+    ? row.imageUrls 
+    : (row.imageUrl ? [row.imageUrl] : []);
+  const imageUrl = imageUrls[0] || undefined;
+  return {
+    ...row,
+    imageUrl,
+    imageUrls,
+    contactNote: undefined
+  };
+}
+
+function toMyPost(row: any) {
+  const imageUrls = row.imageUrls && row.imageUrls.length 
+    ? row.imageUrls 
+    : (row.imageUrl ? [row.imageUrl] : []);
+  const imageUrl = imageUrls[0] || undefined;
+  return {
+    ...row,
+    imageUrl,
+    imageUrls,
+    contactNote: row.contactNote || undefined
+  };
+}
+
 const CATEGORY_LABELS = new Map(CATEGORIES.map((c) => [c.slug, c.label]));
 
 router.get("/posts", async (req, res) => {
   const query = ListPostsQueryParams.parse(req.query);
 
-  const conditions = [eq(postsTable.status, "active")];
+  const conditions = [
+    eq(postsTable.status, "active"),
+    or(isNull(postsTable.expiresAt), gt(postsTable.expiresAt, new Date()))!,
+  ];
   if (query.category) {
     conditions.push(eq(postsTable.category, query.category));
   }
@@ -42,8 +71,8 @@ router.get("/posts", async (req, res) => {
     const term = `%${query.search}%`;
     conditions.push(
       or(
-        ilike(postsTable.title, term),
-        ilike(postsTable.description, term),
+        like(postsTable.title, term),
+        like(postsTable.description, term),
       )!,
     );
   }
@@ -65,7 +94,8 @@ router.get("/posts", async (req, res) => {
     .orderBy(...orderBy)
     .limit(100);
 
-  const data = ListPostsResponse.parse(rows);
+  const publicRows = rows.map(toPublicPost);
+  const data = ListPostsResponse.parse(publicRows);
   res.json(data);
 });
 
@@ -83,6 +113,20 @@ router.post("/posts", async (req, res) => {
   const ownerToken = generateToken();
   const alias = generateAlias();
 
+  let expiresAt: Date | null = null;
+  if (body.expiryDuration && body.expiryDuration !== "never") {
+    const msMap: Record<string, number> = {
+      "24h": 24 * 60 * 60 * 1000,
+      "3d": 3 * 24 * 60 * 60 * 1000,
+      "7d": 7 * 24 * 60 * 60 * 1000,
+      "30d": 30 * 24 * 60 * 60 * 1000,
+    };
+    const durationMs = msMap[body.expiryDuration];
+    if (durationMs) {
+      expiresAt = new Date(Date.now() + durationMs);
+    }
+  }
+
   const [row] = await db
     .insert(postsTable)
     .values({
@@ -92,10 +136,15 @@ router.post("/posts", async (req, res) => {
       title: body.title,
       description: body.description,
       skills: body.skills ?? [],
+      imageUrl: body.imageUrls && body.imageUrls[0] ? body.imageUrls[0] : (body.imageUrl || null),
+      imageUrls: body.imageUrls || (body.imageUrl ? [body.imageUrl] : []),
+      urgency: body.urgency || "casual",
+      expiresAt,
+      contactNote: body.contactNote || null,
     })
     .returning();
 
-  const data = CreatePostResponse.parse({ ...row, ownerToken });
+  const data = CreatePostResponse.parse({ ...toMyPost(row), ownerToken });
   res.status(201).json(data);
 });
 
@@ -106,14 +155,20 @@ router.get("/posts/trending", async (req, res) => {
   const rows = await db
     .select()
     .from(postsTable)
-    .where(eq(postsTable.status, "active"))
+    .where(
+      and(
+        eq(postsTable.status, "active"),
+        or(isNull(postsTable.expiresAt), gt(postsTable.expiresAt, new Date()))!,
+      ),
+    )
     .orderBy(
       desc(sql`${postsTable.requestCount} * 3 + ${postsTable.viewCount}`),
       desc(postsTable.createdAt),
     )
     .limit(limit);
 
-  const data = ListTrendingPostsResponse.parse(rows);
+  const publicRows = rows.map(toPublicPost);
+  const data = ListTrendingPostsResponse.parse(publicRows);
   res.json(data);
 });
 
@@ -131,7 +186,7 @@ router.get("/posts/:id", async (req, res) => {
     return;
   }
 
-  const data = GetPostResponse.parse(row);
+  const data = GetPostResponse.parse(toPublicPost(row));
   res.json(data);
 });
 
@@ -233,7 +288,7 @@ router.get("/me/posts", async (req, res) => {
       });
     }
 
-    result.push({ ...post, incomingRequests: requestsWithMessages });
+    result.push({ ...toMyPost(post), incomingRequests: requestsWithMessages });
   }
 
   const data = ListMyPostsResponse.parse(result);

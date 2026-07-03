@@ -1,19 +1,18 @@
 import {
-  pgTable,
+  sqliteTable,
   text,
-  serial,
   integer,
-  timestamp,
   uniqueIndex,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { postsTable } from "./posts";
+import { sql } from "drizzle-orm";
 
-export const connectionRequestsTable = pgTable(
+export const connectionRequestsTable = sqliteTable(
   "connection_requests",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     postId: integer("post_id")
       .notNull()
       .references(() => postsTable.id),
@@ -21,9 +20,10 @@ export const connectionRequestsTable = pgTable(
     message: text("message").notNull(),
     contactNote: text("contact_note"),
     status: text("status").notNull().default("pending"),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
-      .defaultNow(),
+      .default(sql`(strftime('%s', 'now'))`)
+      .$defaultFn(() => new Date()),
   },
   (table) => [
     uniqueIndex("connection_requests_post_requester_uidx").on(

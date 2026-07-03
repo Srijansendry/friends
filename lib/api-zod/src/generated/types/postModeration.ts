@@ -5,8 +5,25 @@
  * API specification for LNCT GenZ Connect
  * OpenAPI spec version: 0.1.0
  */
+import type { CategorySlug } from './categorySlug';
+import type { PostModerationUrgency } from './postModerationUrgency';
 import type { PostStatus } from './postStatus';
 
 export interface PostModeration {
   status: PostStatus;
+  /**
+     * @minLength 3
+     * @maxLength 120
+     */
+  title?: string;
+  /**
+     * @minLength 10
+     * @maxLength 2000
+     */
+  description?: string;
+  category?: CategorySlug;
+  urgency?: PostModerationUrgency;
+  /** @maxLength 300 */
+  contactNote?: string;
+  skills?: string[];
 }

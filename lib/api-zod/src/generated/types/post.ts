@@ -7,6 +7,7 @@
  */
 import type { CategorySlug } from './categorySlug';
 import type { PostStatus } from './postStatus';
+import type { PostUrgency } from './postUrgency';
 
 export interface Post {
   id: number;
@@ -19,4 +20,9 @@ export interface Post {
   viewCount: number;
   requestCount: number;
   createdAt: Date;
+  imageUrl?: string;
+  imageUrls?: string[];
+  urgency: PostUrgency;
+  expiresAt?: Date;
+  contactNote?: string;
 }

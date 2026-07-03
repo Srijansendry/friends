@@ -2,6 +2,14 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+@font-face {
+  font-family: 'Angelface';
+  src: url('/fonts/Angelface.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -51,7 +59,8 @@
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
   --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-serif: "Fraunces", Georgia, serif;
+  --font-serif: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -79,69 +88,77 @@
 }
 
 :root {
-  --background: 345 50% 99%;
-  --foreground: 345 40% 12%;
-  --border: 345 20% 90%;
+  --background: 338 100% 98.5%;
+  --foreground: 331 38% 15%;
+  --border: 331 48% 90%;
   --card: 0 0% 100%;
-  --card-foreground: 345 40% 12%;
-  --card-border: 345 20% 90%;
-  --sidebar: 345 50% 99%;
-  --sidebar-foreground: 345 40% 12%;
-  --sidebar-border: 345 20% 90%;
-  --sidebar-primary: 342 75% 55%;
+  --card-foreground: 331 38% 15%;
+  --card-border: 331 48% 90%;
+  --sidebar: 338 100% 98.5%;
+  --sidebar-foreground: 331 38% 15%;
+  --sidebar-border: 331 48% 90%;
+  --sidebar-primary: 338 62% 60%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 345 30% 92%;
-  --sidebar-accent-foreground: 345 40% 12%;
-  --sidebar-ring: 342 75% 55%;
+  --sidebar-accent: 260 100% 95%;
+  --sidebar-accent-foreground: 331 38% 15%;
+  --sidebar-ring: 338 62% 60%;
   --popover: 0 0% 100%;
-  --popover-foreground: 345 40% 12%;
-  --popover-border: 345 20% 90%;
-  --primary: 342 85% 52%;
+  --popover-foreground: 331 38% 15%;
+  --popover-border: 331 48% 90%;
+  --primary: 338 62% 60%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 345 25% 94%;
-  --secondary-foreground: 345 40% 16%;
-  --muted: 345 15% 96%;
-  --muted-foreground: 345 15% 45%;
-  --accent: 345 25% 94%;
-  --accent-foreground: 345 40% 12%;
+  --secondary: 260 100% 95%;
+  --secondary-foreground: 331 38% 15%;
+  --muted: 338 30% 96%;
+  --muted-foreground: 331 14% 42%;
+  --accent: 260 100% 95%;
+  --accent-foreground: 331 38% 15%;
   --destructive: 0 80% 55%;
   --destructive-foreground: 0 0% 100%;
-  --input: 345 20% 88%;
-  --ring: 342 85% 52%;
+  --input: 331 48% 90%;
+  --ring: 338 62% 60%;
 
-  --radius: 1rem;
+  --radius: 1.25rem;
+
+  --mesh-glow-1: hsla(338, 62%, 60%, 0.12);
+  --mesh-glow-2: hsla(260, 100%, 95%, 0.4);
+  --mesh-glow-3: hsla(338, 62%, 60%, 0.1);
 }
 
 .dark {
-  --background: 345 40% 5%;
-  --foreground: 345 25% 95%;
-  --border: 345 20% 15%;
-  --card: 345 40% 7%;
-  --card-foreground: 345 25% 95%;
-  --card-border: 345 20% 16%;
-  --sidebar: 345 40% 5%;
-  --sidebar-foreground: 345 25% 95%;
-  --sidebar-border: 345 20% 15%;
-  --sidebar-primary: 342 75% 55%;
+  --background: 240 25% 4%;
+  --foreground: 338 20% 96%;
+  --border: 240 20% 12%;
+  --card: 240 25% 6%;
+  --card-foreground: 338 20% 96%;
+  --card-border: 240 20% 12%;
+  --sidebar: 240 25% 4%;
+  --sidebar-foreground: 338 20% 96%;
+  --sidebar-border: 240 20% 12%;
+  --sidebar-primary: 338 85% 68%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 345 30% 15%;
-  --sidebar-accent-foreground: 345 25% 95%;
-  --sidebar-ring: 342 75% 55%;
-  --popover: 345 40% 7%;
-  --popover-foreground: 345 25% 95%;
-  --popover-border: 345 20% 16%;
-  --primary: 342 85% 58%;
+  --sidebar-accent: 240 20% 10%;
+  --sidebar-accent-foreground: 338 20% 96%;
+  --sidebar-ring: 338 85% 68%;
+  --popover: 240 25% 6%;
+  --popover-foreground: 338 20% 96%;
+  --popover-border: 240 20% 12%;
+  --primary: 338 85% 68%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 345 30% 14%;
-  --secondary-foreground: 345 25% 95%;
-  --muted: 345 30% 12%;
-  --muted-foreground: 345 20% 65%;
-  --accent: 345 30% 14%;
-  --accent-foreground: 345 25% 95%;
-  --destructive: 0 70% 55%;
+  --secondary: 260 40% 12%;
+  --secondary-foreground: 338 20% 96%;
+  --muted: 240 20% 10%;
+  --muted-foreground: 240 10% 65%;
+  --accent: 260 40% 12%;
+  --accent-foreground: 338 20% 96%;
+  --destructive: 0 80% 60%;
   --destructive-foreground: 0 0% 100%;
-  --input: 345 20% 18%;
-  --ring: 342 85% 58%;
+  --input: 240 20% 10%;
+  --ring: 338 85% 68%;
+
+  --mesh-glow-1: hsla(338, 85%, 68%, 0.08);
+  --mesh-glow-2: hsla(260, 70%, 15%, 0.35);
+  --mesh-glow-3: hsla(338, 85%, 68%, 0.05);
 }
 
 @layer base {
@@ -150,33 +167,37 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground tracking-tight;
+    @apply font-body antialiased bg-background text-foreground tracking-tight;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif tracking-tight text-foreground;
   }
+
+  button, .button, select, input, textarea, a {
+    font-family: var(--font-sans);
+  }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-background/70 backdrop-blur-xl border border-white/20 shadow-sm dark:bg-card/70 dark:border-white/5;
+    @apply bg-background/80 backdrop-blur-xl border-b border-border/55 shadow-[0_2px_20px_rgba(216,92,138,0.03)] dark:bg-card/85 dark:border-white/5;
   }
   
   .glass-card {
-    @apply bg-card/80 backdrop-blur-md border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:bg-card/80 dark:border-white/10 dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)];
+    @apply bg-card border border-primary/10 shadow-[0_8px_30px_rgba(216,92,138,0.03)] hover:border-primary/20 dark:bg-card dark:border-white/10 dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)];
   }
 
   .hover-elevate {
-    @apply transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)];
+    @apply transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(216,92,138,0.06)] dark:hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)];
   }
 
   .mesh-bg {
     background-color: hsl(var(--background));
     background-image: 
-      radial-gradient(at 80% 0%, hsla(342, 85%, 52%, 0.15) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsla(342, 85%, 52%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 100%, hsla(342, 85%, 52%, 0.15) 0px, transparent 50%);
+      radial-gradient(at 80% 0%, var(--mesh-glow-1) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, var(--mesh-glow-2) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, var(--mesh-glow-3) 0px, transparent 50%);
   }
 
   .text-balance {
@@ -184,7 +205,7 @@
   }
 
   .focus-ring {
-    @apply focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-200;
+    @apply focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-200;
   }
 }
 

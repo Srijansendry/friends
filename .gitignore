@@ -47,3 +47,11 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Local database
+*.db
+sqlite.db
+
+# Backup zips
+*.zip
+*.zip.*

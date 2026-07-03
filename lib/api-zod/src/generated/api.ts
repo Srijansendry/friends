@@ -47,7 +47,12 @@ export const ListPostsResponseItem = zod.object({
   "status": zod.enum(['active', 'closed', 'removed']),
   "viewCount": zod.number(),
   "requestCount": zod.number(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']),
+  "expiresAt": zod.coerce.date().optional(),
+  "contactNote": zod.string().optional()
 })
 export const ListPostsResponse = zod.array(ListPostsResponseItem)
 
@@ -61,13 +66,20 @@ export const createPostBodyTitleMax = 120;
 export const createPostBodyDescriptionMin = 10;
 export const createPostBodyDescriptionMax = 2000;
 
+export const createPostBodyContactNoteMax = 300;
+
 
 
 export const CreatePostBody = zod.object({
   "category": zod.enum(['find_friends', 'hackathon_team', 'study_group', 'roommate', 'project_collab', 'other']),
   "title": zod.string().min(createPostBodyTitleMin).max(createPostBodyTitleMax),
   "description": zod.string().min(createPostBodyDescriptionMin).max(createPostBodyDescriptionMax),
-  "skills": zod.array(zod.string()).optional()
+  "skills": zod.array(zod.string()).optional(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']).optional(),
+  "expiryDuration": zod.enum(['24h', '3d', '7d', '30d', 'never']).optional(),
+  "contactNote": zod.string().max(createPostBodyContactNoteMax).optional()
 })
 
 export const CreatePostResponse = zod.object({
@@ -80,7 +92,12 @@ export const CreatePostResponse = zod.object({
   "status": zod.enum(['active', 'closed', 'removed']),
   "viewCount": zod.number(),
   "requestCount": zod.number(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']),
+  "expiresAt": zod.coerce.date().optional(),
+  "contactNote": zod.string().optional()
 }).and(zod.object({
   "ownerToken": zod.string()
 }))
@@ -107,7 +124,12 @@ export const ListTrendingPostsResponseItem = zod.object({
   "status": zod.enum(['active', 'closed', 'removed']),
   "viewCount": zod.number(),
   "requestCount": zod.number(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']),
+  "expiresAt": zod.coerce.date().optional(),
+  "contactNote": zod.string().optional()
 })
 export const ListTrendingPostsResponse = zod.array(ListTrendingPostsResponseItem)
 
@@ -129,7 +151,12 @@ export const GetPostResponse = zod.object({
   "status": zod.enum(['active', 'closed', 'removed']),
   "viewCount": zod.number(),
   "requestCount": zod.number(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']),
+  "expiresAt": zod.coerce.date().optional(),
+  "contactNote": zod.string().optional()
 })
 
 
@@ -183,7 +210,12 @@ export const ListMyPostsResponseItem = zod.object({
   "status": zod.enum(['active', 'closed', 'removed']),
   "viewCount": zod.number(),
   "requestCount": zod.number(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']),
+  "expiresAt": zod.coerce.date().optional(),
+  "contactNote": zod.string().optional()
 }).and(zod.object({
   "incomingRequests": zod.array(zod.object({
   "id": zod.number(),
@@ -282,7 +314,12 @@ export const ListAdminPostsResponseItem = zod.object({
   "status": zod.enum(['active', 'closed', 'removed']),
   "viewCount": zod.number(),
   "requestCount": zod.number(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']),
+  "expiresAt": zod.coerce.date().optional(),
+  "contactNote": zod.string().optional()
 })
 export const ListAdminPostsResponse = zod.array(ListAdminPostsResponseItem)
 
@@ -294,8 +331,24 @@ export const UpdateAdminPostParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const updateAdminPostBodyTitleMin = 3;
+export const updateAdminPostBodyTitleMax = 120;
+
+export const updateAdminPostBodyDescriptionMin = 10;
+export const updateAdminPostBodyDescriptionMax = 2000;
+
+export const updateAdminPostBodyContactNoteMax = 300;
+
+
+
 export const UpdateAdminPostBody = zod.object({
-  "status": zod.enum(['active', 'closed', 'removed'])
+  "status": zod.enum(['active', 'closed', 'removed']),
+  "title": zod.string().min(updateAdminPostBodyTitleMin).max(updateAdminPostBodyTitleMax).optional(),
+  "description": zod.string().min(updateAdminPostBodyDescriptionMin).max(updateAdminPostBodyDescriptionMax).optional(),
+  "category": zod.enum(['find_friends', 'hackathon_team', 'study_group', 'roommate', 'project_collab', 'other']).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']).optional(),
+  "contactNote": zod.string().max(updateAdminPostBodyContactNoteMax).optional(),
+  "skills": zod.array(zod.string()).optional()
 })
 
 export const UpdateAdminPostResponse = zod.object({
@@ -308,7 +361,12 @@ export const UpdateAdminPostResponse = zod.object({
   "status": zod.enum(['active', 'closed', 'removed']),
   "viewCount": zod.number(),
   "requestCount": zod.number(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "imageUrl": zod.string().optional(),
+  "imageUrls": zod.array(zod.string()).optional(),
+  "urgency": zod.enum(['casual', 'urgent', 'looking_for_long_term']),
+  "expiresAt": zod.coerce.date().optional(),
+  "contactNote": zod.string().optional()
 })
 
 

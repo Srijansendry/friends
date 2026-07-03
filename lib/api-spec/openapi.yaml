@@ -480,6 +480,7 @@ components:
           viewCount,
           requestCount,
           createdAt,
+          urgency,
         ]
       properties:
         id:
@@ -505,6 +506,20 @@ components:
         createdAt:
           type: string
           format: date-time
+        imageUrl:
+          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        urgency:
+          type: string
+          enum: [casual, urgent, looking_for_long_term]
+        expiresAt:
+          type: string
+          format: date-time
+        contactNote:
+          type: string
 
     PostWithToken:
       allOf:
@@ -533,6 +548,21 @@ components:
           type: array
           items:
             type: string
+        imageUrl:
+          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        urgency:
+          type: string
+          enum: [casual, urgent, looking_for_long_term]
+        expiryDuration:
+          type: string
+          enum: [24h, 3d, 7d, 30d, never]
+        contactNote:
+          type: string
+          maxLength: 300
 
     PostModeration:
       type: object
@@ -540,6 +570,26 @@ components:
       properties:
         status:
           $ref: "#/components/schemas/PostStatus"
+        title:
+          type: string
+          minLength: 3
+          maxLength: 120
+        description:
+          type: string
+          minLength: 10
+          maxLength: 2000
+        category:
+          $ref: "#/components/schemas/CategorySlug"
+        urgency:
+          type: string
+          enum: [casual, urgent, looking_for_long_term]
+        contactNote:
+          type: string
+          maxLength: 300
+        skills:
+          type: array
+          items:
+            type: string
 
     ConnectionRequestInput:
       type: object

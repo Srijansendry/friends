@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Loader2, Info, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ShieldCheck, Loader2, Info, Sparkles, Upload, X, Calendar, Flame, EyeOff, Image as ImageIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +23,10 @@ const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(120, "Title is too long"),
   description: z.string().min(10, "Description must be at least 10 characters").max(2000, "Description is too long"),
   skills: z.string().optional(),
+  urgency: z.string().min(1, "Please select urgency level"),
+  expiryDuration: z.string().min(1, "Please select expiry duration"),
+  contactNote: z.string().max(300, "Contact handle is too long").optional(),
+  agreement: z.boolean().refine((val) => val === true, "You must agree to continue"),
 });
 
 export function Post() {
@@ -29,6 +35,7 @@ export function Post() {
   const { data: categories } = useListCategories();
   const createPost = useCreatePost();
   const [successToken, setSuccessToken] = useState<string | null>(null);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,10 +44,75 @@ export function Post() {
       title: "",
       description: "",
       skills: "",
+      urgency: "casual",
+      expiryDuration: "7d",
+      contactNote: "",
+      agreement: false,
     },
   });
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const remainingSlots = 3 - imageUrls.length;
+      if (remainingSlots <= 0) {
+        toast({
+          variant: "destructive",
+          title: "Limit reached",
+          description: "You can upload up to 3 images per post.",
+        });
+        return;
+      }
+      
+      const filesToProcess = Array.from(files).slice(0, remainingSlots);
+      filesToProcess.forEach(file => {
+        if (file.size > 2 * 1024 * 1024) {
+          toast({
+            variant: "destructive",
+            title: "File too large",
+            description: `Image "${file.name}" is larger than 2MB.`,
+          });
+          return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          setImageUrls(prev => [...prev, base64String]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setImageUrls(prev => prev.filter((_, i) => i !== indexToRemove));
+  };
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    // Maintenance Mode Check
+    if (localStorage.getItem("gc-maintenance-mode") === "true") {
+      toast({
+        variant: "destructive",
+        title: "Platform in Maintenance",
+        description: "The system is currently in read-only mode for maintenance. Please try again later.",
+      });
+      return;
+    }
+
+    // Profanity Filter Check
+    const bannedWordsStr = localStorage.getItem("gc-banned-words") || "spam,scam,money,hack";
+    const bannedWords = bannedWordsStr.split(",").map(w => w.trim().toLowerCase()).filter(Boolean);
+    const textToTest = `${values.title} ${values.description} ${values.skills || ""}`.toLowerCase();
+    const foundBannedWord = bannedWords.find(word => textToTest.includes(word));
+    if (foundBannedWord) {
+      toast({
+        variant: "destructive",
+        title: "Moderation Filter Triggered",
+        description: `Your post contains a restricted word ("${foundBannedWord}"). Please rewrite it professionally.`,
+      });
+      return;
+    }
+
     const skillsArray = values.skills 
       ? values.skills.split(",").map(s => s.trim()).filter(Boolean)
       : [];
@@ -51,6 +123,10 @@ export function Post() {
         title: values.title,
         description: values.description,
         skills: skillsArray,
+        imageUrls: imageUrls,
+        urgency: values.urgency as any,
+        expiryDuration: values.expiryDuration as any,
+        contactNote: values.contactNote || undefined,
       }
     }, {
       onSuccess: (data) => {
@@ -192,6 +268,154 @@ export function Post() {
                       Help others find you by listing relevant keywords.
                     </p>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="skills" // Using an existing schema key so it matches types cleanly (or we can use any key)
+                render={() => (
+                  <FormItem className="space-y-3">
+                    <FormLabel className="text-base font-semibold flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-primary" />
+                      Attach Images (Optional, up to 3)
+                    </FormLabel>
+                    <FormControl>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {imageUrls.map((url, idx) => (
+                          <div key={idx} className="relative rounded-2xl overflow-hidden border border-primary/20 bg-muted/20 h-32 flex items-center justify-center p-2 group shadow-sm">
+                            <img src={url} alt={`Preview ${idx + 1}`} className="max-h-full object-contain rounded-xl w-full" />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 w-6 h-6 rounded-full shadow-md"
+                              onClick={() => removeImage(idx)}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+                        {imageUrls.length < 3 && (
+                          <div className="border-2 border-dashed border-border/70 hover:border-primary/50 bg-background/25 hover:bg-background/40 transition-all rounded-2xl p-4 text-center cursor-pointer relative flex flex-col items-center justify-center gap-1.5 h-32">
+                            <Upload className="w-6 h-6 text-muted-foreground" />
+                            <div className="space-y-0.5">
+                              <p className="text-xs font-bold text-foreground/80">Upload image</p>
+                              <p className="text-[10px] text-muted-foreground">Up to 2MB</p>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              onChange={handleImageChange}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="urgency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold flex items-center gap-2">
+                        <Flame className="w-4 h-4 text-primary" />
+                        Urgency Level
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-background/50 h-12 rounded-xl focus-ring">
+                            <SelectValue placeholder="Select urgency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="casual">Casual (Friendly/Discussion)</SelectItem>
+                          <SelectItem value="urgent">Urgent (ASAP/Deadline)</SelectItem>
+                          <SelectItem value="looking_for_long_term">Looking for Long-Term</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="expiryDuration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-semibold flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        Post Expiry
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-background/50 h-12 rounded-xl focus-ring">
+                            <SelectValue placeholder="Select expiry" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="24h">24 Hours</SelectItem>
+                          <SelectItem value="3d">3 Days</SelectItem>
+                          <SelectItem value="7d">7 Days</SelectItem>
+                          <SelectItem value="30d">30 Days</SelectItem>
+                          <SelectItem value="never">Never (Keep Active)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="contactNote"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-semibold flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <EyeOff className="w-4 h-4 text-primary" />
+                        Your Contact Handle (Admin Only)
+                      </span>
+                      <Badge variant="secondary" className="text-[10px] uppercase tracking-widest font-bold bg-primary/10 text-primary border-none">Confidential</Badge>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="E.g., Instagram: @name, Telegram: @handle, or Phone" className="bg-background/50 h-12 rounded-xl focus-ring text-base" {...field} />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                      This is strictly confidential. Only the admin will see this handle, and will use it to contact you when someone requests to connect.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="agreement"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-2xl border border-primary/10 bg-primary/5 p-4 shadow-sm">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-0.5"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-sm font-semibold text-foreground/90 cursor-pointer">
+                        I understand my post will be anonymous and connection requests may be reviewed.
+                      </FormLabel>
+                      <FormMessage />
+                    </div>
                   </FormItem>
                 )}
               />

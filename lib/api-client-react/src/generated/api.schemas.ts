@@ -45,6 +45,15 @@ export interface Category {
   description: string;
 }
 
+export type PostUrgency = typeof PostUrgency[keyof typeof PostUrgency];
+
+
+export const PostUrgency = {
+  casual: 'casual',
+  urgent: 'urgent',
+  looking_for_long_term: 'looking_for_long_term',
+} as const;
+
 export interface Post {
   id: number;
   category: CategorySlug;
@@ -56,11 +65,36 @@ export interface Post {
   viewCount: number;
   requestCount: number;
   createdAt: string;
+  imageUrl?: string;
+  imageUrls?: string[];
+  urgency: PostUrgency;
+  expiresAt?: string;
+  contactNote?: string;
 }
 
 export type PostWithToken = Post & {
   ownerToken: string;
 };
+
+export type PostInputUrgency = typeof PostInputUrgency[keyof typeof PostInputUrgency];
+
+
+export const PostInputUrgency = {
+  casual: 'casual',
+  urgent: 'urgent',
+  looking_for_long_term: 'looking_for_long_term',
+} as const;
+
+export type PostInputExpiryDuration = typeof PostInputExpiryDuration[keyof typeof PostInputExpiryDuration];
+
+
+export const PostInputExpiryDuration = {
+  '24h': '24h',
+  '3d': '3d',
+  '7d': '7d',
+  '30d': '30d',
+  never: 'never',
+} as const;
 
 export interface PostInput {
   category: CategorySlug;
@@ -75,10 +109,40 @@ export interface PostInput {
      */
   description: string;
   skills?: string[];
+  imageUrl?: string;
+  imageUrls?: string[];
+  urgency?: PostInputUrgency;
+  expiryDuration?: PostInputExpiryDuration;
+  /** @maxLength 300 */
+  contactNote?: string;
 }
+
+export type PostModerationUrgency = typeof PostModerationUrgency[keyof typeof PostModerationUrgency];
+
+
+export const PostModerationUrgency = {
+  casual: 'casual',
+  urgent: 'urgent',
+  looking_for_long_term: 'looking_for_long_term',
+} as const;
 
 export interface PostModeration {
   status: PostStatus;
+  /**
+     * @minLength 3
+     * @maxLength 120
+     */
+  title?: string;
+  /**
+     * @minLength 10
+     * @maxLength 2000
+     */
+  description?: string;
+  category?: CategorySlug;
+  urgency?: PostModerationUrgency;
+  /** @maxLength 300 */
+  contactNote?: string;
+  skills?: string[];
 }
 
 export interface ConnectionRequestInput {

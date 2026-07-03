@@ -1,18 +1,20 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { connectionRequestsTable } from "./connection_requests";
+import { sql } from "drizzle-orm";
 
-export const adminMessagesTable = pgTable("admin_messages", {
-  id: serial("id").primaryKey(),
+export const adminMessagesTable = sqliteTable("admin_messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   connectionRequestId: integer("connection_request_id")
     .notNull()
     .references(() => connectionRequestsTable.id),
   toParty: text("to_party").notNull(),
   body: text("body").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
+  createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
-    .defaultNow(),
+    .default(sql`(strftime('%s', 'now'))`)
+    .$defaultFn(() => new Date()),
 });
 
 export const insertAdminMessageSchema = createInsertSchema(

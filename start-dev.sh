@@ -3,6 +3,11 @@ set -e
 
 echo "Starting LNCT GenZ Connect..."
 
+# Inject default environment variables for local development
+export SESSION_SECRET="${SESSION_SECRET:-devsecret}"
+export ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin}"
+export DATABASE_URL="${DATABASE_URL:-$(pwd)/sqlite.db}"
+
 # Start API server in background
 echo "→ Starting API server on port 8080..."
 PORT=8080 pnpm --filter @workspace/api-server run dev &
@@ -28,6 +33,6 @@ if [ "$READY" != "true" ]; then
   exit 1
 fi
 
-# Start frontend on port 5000 (Replit webview port)
-echo "→ Starting frontend on port 5000..."
-PORT=5000 BASE_PATH=/ pnpm --filter @workspace/genz-connect run dev
+# Start frontend on port 3000
+echo "→ Starting frontend on port 3000..."
+PORT=3000 BASE_PATH=/ pnpm --filter @workspace/genz-connect run dev
